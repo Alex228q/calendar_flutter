@@ -19,7 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _crew = 2;
   DateTime currentMonth = DateTime.now();
-  DateTime stableDate = DateTime.now();
 
   @override
   void initState() {
@@ -110,16 +109,19 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 12,
             ),
             const DaysOfWeek(),
-            SizedBox(
-              height: 380,
-              child: GestureDetector(
-                onHorizontalDragEnd: _handleSwipe,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Month(
-                    currentMonth: currentMonth,
-                    crew: _crew,
-                    key: ValueKey(currentMonth),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: SizedBox(
+                height: 380,
+                child: GestureDetector(
+                  onHorizontalDragEnd: _handleSwipe,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Month(
+                      currentMonth: currentMonth,
+                      crew: _crew,
+                      key: ValueKey(currentMonth),
+                    ),
                   ),
                 ),
               ),
@@ -130,10 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   AnimatedOpacity(
-                    opacity: currentMonth.toString().substring(0, 10) !=
-                            stableDate.toString().substring(0, 10)
-                        ? 1.0
-                        : 0.0,
+                    opacity: currentMonth.year == DateTime.now().year &&
+                            currentMonth.month == DateTime.now().month
+                        ? 0
+                        : 1,
                     duration: const Duration(milliseconds: 700),
                     child: GestureDetector(
                       onTap: () {
