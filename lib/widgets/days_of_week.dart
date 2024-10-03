@@ -6,7 +6,7 @@ class DaysOfWeek extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.only(right: 6, left: 6, bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'].map(
