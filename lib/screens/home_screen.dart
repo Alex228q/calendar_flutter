@@ -58,15 +58,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _plusMonth() {
     setState(() {
-      currentMonth =
-          DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
+      currentMonth = DateTime(currentMonth.year, currentMonth.month + 1);
     });
   }
 
   void _minusMonth() {
     setState(() {
-      currentMonth =
-          DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
+      currentMonth = DateTime(currentMonth.year, currentMonth.month - 1);
     });
   }
 
@@ -128,45 +126,50 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  AnimatedOpacity(
-                    opacity: currentMonth.year == DateTime.now().year &&
-                            currentMonth.month == DateTime.now().month
-                        ? 0
-                        : 1,
-                    duration: const Duration(milliseconds: 700),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentMonth = DateTime.now();
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 68, 206, 153),
-                            width: 3,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 10),
-                          child: Text(
-                            DateFormat('dd.MM.yyyy').format(DateTime.now()),
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w600,
-                              color: Color.fromARGB(255, 230, 230, 230),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 700),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  child: currentMonth.year == DateTime.now().year &&
+                          currentMonth.month == DateTime.now().month
+                      ? const SizedBox.shrink()
+                      : GestureDetector(
+                          key: const ValueKey('date_button'),
+                          onTap: () {
+                            setState(() {
+                              currentMonth = DateTime.now();
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 68, 206, 153),
+                                width: 3,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 10),
+                              child: Text(
+                                DateFormat('dd.MM.yyyy').format(DateTime.now()),
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color.fromARGB(255, 230, 230, 230),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             const Spacer(),
