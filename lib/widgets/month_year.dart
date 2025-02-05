@@ -34,14 +34,15 @@ class MonthYear extends StatelessWidget {
           ),
           const Spacer(),
           IconButton(
-              onPressed: () {
-                onClickPicker(context);
-              },
-              icon: const Icon(
-                Icons.calendar_month,
-                color: Color.fromARGB(255, 66, 211, 146),
-                size: 28,
-              ))
+            onPressed: () {
+              onClickPicker(context);
+            },
+            icon: const Icon(
+              Icons.calendar_month,
+              color: Color.fromARGB(255, 66, 211, 146),
+              size: 28,
+            ),
+          )
         ],
       ),
     );

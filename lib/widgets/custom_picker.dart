@@ -27,6 +27,7 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.only(bottom: 8),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16),
@@ -55,7 +56,8 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
                       return Center(
                         child: Text(
                           getMonthInRussian(index + 1),
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w500),
                         ),
                       );
                     }),
@@ -77,7 +79,8 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
                       return Center(
                         child: Text(
                           (2024 + index).toString(),
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w500),
                         ),
                       );
                     }),
@@ -89,7 +92,8 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
           CupertinoButton(
             child: const Text(
               'ВЫБРАТЬ',
-              style: TextStyle(color: Colors.black),
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
             ),
             onPressed: () {
               widget.onDateChanged(selectedDate);
