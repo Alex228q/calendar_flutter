@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 class CustomMonthYearPicker extends StatefulWidget {
   final DateTime initialDate;
+  final int firstYear;
+  final int yearCount;
   final Function(DateTime) onDateChanged;
 
   const CustomMonthYearPicker({
     super.key,
     required this.initialDate,
+    required this.firstYear,
+    required this.yearCount,
     required this.onDateChanged,
   });
 
@@ -26,8 +30,12 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
 
   @override
   Widget build(BuildContext context) {
+    // Отступ под системную панель навигации (кнопки домой/назад/меню),
+    // чтобы она не перекрывала кнопку «ВЫБРАТЬ».
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+
     return Container(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8 + bottomInset),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16),
@@ -35,7 +43,7 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
         ),
         color: Color.fromARGB(255, 66, 211, 146),
       ),
-      height: 250,
+      height: 250 + bottomInset,
       child: Column(
         children: [
           Expanded(
@@ -66,19 +74,19 @@ class CustomMonthYearPickerState extends State<CustomMonthYearPicker> {
                 Expanded(
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedDate.year - 2024,
+                      initialItem: selectedDate.year - widget.firstYear,
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (int index) {
                       setState(() {
-                        selectedDate =
-                            DateTime(2024 + index, selectedDate.month);
+                        selectedDate = DateTime(
+                            widget.firstYear + index, selectedDate.month);
                       });
                     },
-                    children: List<Widget>.generate(33, (index) {
+                    children: List<Widget>.generate(widget.yearCount, (index) {
                       return Center(
                         child: Text(
-                          (2024 + index).toString(),
+                          (widget.firstYear + index).toString(),
                           style: const TextStyle(
                               color: Colors.black, fontWeight: FontWeight.w500),
                         ),

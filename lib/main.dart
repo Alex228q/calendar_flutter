@@ -3,8 +3,19 @@ import 'package:flutter/services.dart';
 
 import 'screens/home_screen.dart';
 
+const SystemUiOverlayStyle appOverlayStyle = SystemUiOverlayStyle(
+  statusBarColor: Color.fromARGB(255, 26, 26, 26),
+  statusBarIconBrightness: Brightness.light, // Android: светлые иконки
+  statusBarBrightness: Brightness.dark, // iOS: светлые иконки
+  systemNavigationBarColor: Color.fromARGB(255, 26, 26, 26),
+  systemNavigationBarIconBrightness: Brightness.light,
+  systemNavigationBarContrastEnforced: false,
+  systemStatusBarContrastEnforced: false,
+);
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(appOverlayStyle);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((_) {
@@ -17,14 +28,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Color.fromARGB(255, 26, 26, 26),
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color.fromARGB(255, 26, 26, 26),
-    ));
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      theme: ThemeData.dark(),
+      home: const HomeScreen(),
     );
   }
 }
