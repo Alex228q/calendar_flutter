@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'onboarding_manager.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 const SystemUiOverlayStyle appOverlayStyle = SystemUiOverlayStyle(
   statusBarColor: Color.fromARGB(255, 26, 26, 26),
@@ -13,25 +15,28 @@ const SystemUiOverlayStyle appOverlayStyle = SystemUiOverlayStyle(
   systemStatusBarContrastEnforced: false,
 );
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(appOverlayStyle);
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-  ]).then((_) {
-    runApp(const MainApp());
-  });
+  ]);
+  // Решаем до запуска, какой экран показывать, чтобы не было мерцания.
+  final seen = await OnboardingManager().isSeen();
+  runApp(MainApp(showOnboarding: !seen));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  const MainApp({super.key, required this.showOnboarding});
+
+  final bool showOnboarding;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const HomeScreen(),
+      home: showOnboarding ? const OnboardingScreen() : const HomeScreen(),
     );
   }
 }
