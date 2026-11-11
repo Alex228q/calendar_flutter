@@ -25,6 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   static const int _pageCount = _monthsBack + _yearsForward * 12 + 1;
 
   int _crew = 2;
+  int? _compareCrew; // бригада, которую сейчас удерживаем для сравнения
+  int? _lastCompareCrew;
   Set<String> _events = {};
 
   late final DateTime _baseMonth; // первое число текущего месяца
@@ -113,6 +115,13 @@ class _HomeScreenState extends State<HomeScreen> {
     CrewManager().saveCrew(numberOfCrew);
   }
 
+  void _startCompare(int crew) => setState(() {
+        _compareCrew = crew;
+        _lastCompareCrew = crew;
+      });
+
+  void _endCompare() => setState(() => _compareCrew = null);
+
   void _goToToday() {
     _pageController.jumpToPage(_monthsBack);
   }
@@ -163,6 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Month(
                             currentMonth: _monthForPage(page),
                             crew: _crew,
+                            compareCrew: _compareCrew,
+                            lastCompareCrew: _lastCompareCrew,
                             events: _events,
                             onToggleEvent: _toggleEvent,
                           ),
@@ -172,7 +183,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              ButtonBloc(crew: _crew, onChangeCrew: _changeCrew),
+              ButtonBloc(
+                crew: _crew,
+                onChangeCrew: _changeCrew,
+                compareCrew: _compareCrew,
+                onCompareStart: _startCompare,
+                onCompareEnd: _endCompare,
+              ),
               const SizedBox(height: 46),
             ],
           ),

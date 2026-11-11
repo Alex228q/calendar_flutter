@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../main.dart'; // для appOverlayStyle
 import '../onboarding_manager.dart';
+import '../widgets/month.dart'; // для CornerPainter
 import 'home_screen.dart';
 
 const Color _bgColor = Color.fromARGB(255, 26, 26, 26);
@@ -33,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Листайте месяцы',
       text: 'Свайп влево и вправо переключает месяцы. '
           'Значок календаря сверху открывает выбор месяца и года, '
-          'а кнопка с датой возвращает к сегодняшнему дню.',
+          'а кнопка с числом возвращает к сегодняшнему дню.',
     ),
     const _OnboardingPage(
       visual: _BigIcon(
@@ -44,6 +45,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       text: 'Дважды нажмите на дату, чтобы поставить звёздочку, '
           'и ещё раз, чтобы убрать. Отметки сохраняются на телефоне, '
           'а старше двух лет удаляются сами.',
+    ),
+    const _OnboardingPage(
+      visual: _CompareDemo(),
+      title: 'Сравнение бригад',
+      text: 'Удерживайте номер другой бригады внизу экрана, '
+          'и рядом с вашей полоской появится уголок её смены. '
+          'Отпустите палец, и уголки исчезнут.',
     ),
   ];
 
@@ -276,6 +284,76 @@ class _ShiftLegend extends StatelessWidget {
           _row(const Color.fromARGB(255, 24, 226, 31), 'День'),
           _row(const Color.fromARGB(255, 9, 126, 221), 'Вечер'),
           _row(const Color.fromARGB(255, 226, 28, 14), 'Ночь'),
+        ],
+      ),
+    );
+  }
+}
+
+/// Мини-пример сравнения бригад: основная полоска и уголок второй бригады.
+class _CompareDemo extends StatelessWidget {
+  const _CompareDemo();
+
+  static const _green = Color.fromARGB(255, 24, 226, 31);
+  static const _blue = Color.fromARGB(255, 9, 126, 221);
+  static const _red = Color.fromARGB(255, 226, 28, 14);
+
+  Widget _cell(String day, Color main, Color other) {
+    return SizedBox(
+      width: 64,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            day,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: _textMain,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 4,
+                width: 16,
+                decoration: BoxDecoration(
+                  color: main,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              Positioned(
+                left: 16 + CornerPainter.gap,
+                bottom: (4 - CornerPainter.stroke) / 2,
+                child: CustomPaint(
+                  size: CornerPainter.size,
+                  painter: CornerPainter(other),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF242424),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _cell('10', _blue, _red),
+          _cell('11', _blue, _red),
+          _cell('12', Colors.transparent, Colors.transparent),
+          _cell('14', _red, _green),
         ],
       ),
     );

@@ -7,25 +7,28 @@ class Month extends StatelessWidget {
     super.key,
     required this.currentMonth,
     required this.crew,
+    required this.compareCrew,
+    required this.lastCompareCrew,
     required this.events,
     required this.onToggleEvent,
   });
 
   final DateTime currentMonth;
   final int crew;
+  final int? compareCrew;
+  final int? lastCompareCrew;
   final Set<String> events;
   final void Function(DateTime date) onToggleEvent;
 
-  /// Насколько приглушены даты соседних месяцев.
   static const double _outsideOpacity = 0.35;
 
   /// График цикличный (период 10 дней), поэтому цвет считаем арифметикой.
   /// День: 0–1, вечер: 2–3, ночь: 6–7; каждая бригада сдвинута на 2 дня.
-  Color _shiftColor(DateTime date) {
+  Color _shiftColor(DateTime date, int crewNumber) {
     final diff = DateTime.utc(date.year, date.month, date.day)
         .difference(DateTime.utc(2024, 3, 1))
         .inDays;
-    final k = (diff - 2 * (crew - 1)) % 10; // в Dart результат всегда >= 0
+    final k = (diff - 2 * (crewNumber - 1)) % 10;
     if (k == 0 || k == 1) return const Color.fromARGB(255, 24, 226, 31); // день
     if (k == 2 || k == 3) {
       return const Color.fromARGB(255, 9, 126, 221); // вечер
@@ -40,10 +43,11 @@ class Month extends StatelessWidget {
     final daysInMonth =
         DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
     final emptyCells = firstDayOfMonth.weekday - 1;
-    // Добиваем до полных недель днями следующего месяца
     final totalCells = ((daysInMonth + emptyCells + 6) ~/ 7) * 7;
 
     final now = DateTime.now();
+    // Пока уголок гаснет, красим его цветом последней сравниваемой бригады
+    final compare = compareCrew ?? lastCompareCrew ?? crew;
 
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
@@ -51,8 +55,6 @@ class Month extends StatelessWidget {
           crossAxisCount: 7, mainAxisSpacing: 8),
       itemCount: totalCells,
       itemBuilder: (context, index) {
-        // DateTime сам переносит выход за границы месяца
-        // (день 0 и меньше — прошлый месяц, больше длины — следующий)
         final date = DateTime(
             currentMonth.year, currentMonth.month, index - emptyCells + 1);
         final isOutside = date.month != currentMonth.month;
@@ -61,7 +63,6 @@ class Month extends StatelessWidget {
             date.month == now.month &&
             date.day == now.day;
         final hasEvent = events.contains(EventsManager.keyOf(date));
-        final backgroundColor = _shiftColor(date);
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -84,8 +85,6 @@ class Month extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Звёздочка привязана к самому числу, а не к ячейке,
-                    // поэтому расстояние до цифры всегда одинаковое.
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -109,14 +108,35 @@ class Month extends StatelessWidget {
                           ),
                       ],
                     ),
-                    Container(
-                      height: 4,
-                      width: 16,
-                      decoration: BoxDecoration(
-                        color: backgroundColor,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )
+                    // Основная полоска. Уголок второй бригады привязан
+                    // к ней, поэтому нижняя часть всегда на одной высоте.
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          height: 4,
+                          width: 16,
+                          decoration: BoxDecoration(
+                            color: _shiftColor(date, crew),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        Positioned(
+                          left: 16 + CornerPainter.gap,
+                          // центр нижней линии уголка = центр полоски
+                          bottom: (4 - CornerPainter.stroke) / 2,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: compareCrew == null ? 0 : 1,
+                            child: CustomPaint(
+                              size: CornerPainter.size,
+                              painter:
+                                  CornerPainter(_shiftColor(date, compare)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -126,4 +146,47 @@ class Month extends StatelessWidget {
       },
     );
   }
+}
+
+/// Уголок с закруглением справа от основной полоски:
+/// вертикаль вверх, поворот и короткая горизонталь внизу.
+/// Публичный, чтобы его можно было использовать в онбординге.
+class CornerPainter extends CustomPainter {
+  CornerPainter(this.color);
+
+  final Color color;
+
+  static const double stroke = 3.5; // толщина линии
+  static const double gap = 4; // зазор до основной полоски
+  static const double _radius = 6;
+  static const Size size = Size(_radius + stroke / 2, 16); // ширина, высота
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    if (color == Colors.transparent) return;
+
+    final x = s.width - stroke / 2;
+    final y = s.height - stroke / 2;
+
+    final path = Path()
+      ..moveTo(x, 0)
+      ..lineTo(x, y - _radius)
+      ..arcToPoint(
+        Offset(x - _radius, y),
+        radius: const Radius.circular(_radius),
+        clockwise: true,
+      );
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CornerPainter old) => old.color != color;
 }
