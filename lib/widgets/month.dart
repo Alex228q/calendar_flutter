@@ -16,6 +16,9 @@ class Month extends StatelessWidget {
   final Set<String> events;
   final void Function(DateTime date) onToggleEvent;
 
+  /// Насколько приглушены даты соседних месяцев.
+  static const double _outsideOpacity = 0.35;
+
   /// График цикличный (период 10 дней), поэтому цвет считаем арифметикой.
   /// День: 0–1, вечер: 2–3, ночь: 6–7; каждая бригада сдвинута на 2 дня.
   Color _shiftColor(DateTime date) {
@@ -24,23 +27,23 @@ class Month extends StatelessWidget {
         .inDays;
     final k = (diff - 2 * (crew - 1)) % 10; // в Dart результат всегда >= 0
     if (k == 0 || k == 1) return const Color.fromARGB(255, 24, 226, 31); // день
-    if (k == 2 || k == 3)
+    if (k == 2 || k == 3) {
       return const Color.fromARGB(255, 9, 126, 221); // вечер
+    }
     if (k == 6 || k == 7) return const Color.fromARGB(255, 226, 28, 14); // ночь
     return Colors.transparent;
   }
 
   @override
   Widget build(BuildContext context) {
-    DateTime firstDayOfMonth =
-        DateTime(currentMonth.year, currentMonth.month, 1);
-    DateTime nextMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
-    DateTime lastDayOfMonth = nextMonth.subtract(const Duration(days: 1));
-    int daysInMonth = lastDayOfMonth.day;
-    int emptyCells = firstDayOfMonth.weekday - 1;
-    int totalCells = daysInMonth + emptyCells;
+    final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
+    final daysInMonth =
+        DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    final emptyCells = firstDayOfMonth.weekday - 1;
+    // Добиваем до полных недель днями следующего месяца
+    final totalCells = ((daysInMonth + emptyCells + 6) ~/ 7) * 7;
 
-    DateTime now = DateTime.now();
+    final now = DateTime.now();
 
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
@@ -48,34 +51,36 @@ class Month extends StatelessWidget {
           crossAxisCount: 7, mainAxisSpacing: 8),
       itemCount: totalCells,
       itemBuilder: (context, index) {
-        if (index < emptyCells) {
-          return const Center(child: Text(''));
-        } else {
-          int day = index - emptyCells + 1;
-          DateTime date = DateTime(currentMonth.year, currentMonth.month, day);
+        // DateTime сам переносит выход за границы месяца
+        // (день 0 и меньше — прошлый месяц, больше длины — следующий)
+        final date = DateTime(
+            currentMonth.year, currentMonth.month, index - emptyCells + 1);
+        final isOutside = date.month != currentMonth.month;
 
-          bool isCurrentDate = date.year == now.year &&
-              date.month == now.month &&
-              date.day == now.day;
-          bool hasEvent = events.contains(EventsManager.keyOf(date));
-          Color backgroundColor = _shiftColor(date);
+        final isCurrentDate = date.year == now.year &&
+            date.month == now.month &&
+            date.day == now.day;
+        final hasEvent = events.contains(EventsManager.keyOf(date));
+        final backgroundColor = _shiftColor(date);
 
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onDoubleTap: () {
-              HapticFeedback.lightImpact();
-              onToggleEvent(date);
-            },
-            child: Container(
-              decoration: isCurrentDate
-                  ? BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: const Color.fromARGB(255, 68, 206, 153),
-                          width: 3),
-                    )
-                  : null,
-              child: Center(
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onDoubleTap: () {
+            HapticFeedback.lightImpact();
+            onToggleEvent(date);
+          },
+          child: Container(
+            decoration: isCurrentDate
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 68, 206, 153),
+                        width: 3),
+                  )
+                : null,
+            child: Center(
+              child: Opacity(
+                opacity: isOutside ? _outsideOpacity : 1,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -85,7 +90,7 @@ class Month extends StatelessWidget {
                       clipBehavior: Clip.none,
                       children: [
                         Text(
-                          day.toString(),
+                          date.day.toString(),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -116,8 +121,8 @@ class Month extends StatelessWidget {
                 ),
               ),
             ),
-          );
-        }
+          ),
+        );
       },
     );
   }

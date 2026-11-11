@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 
 class MonthYear extends StatelessWidget {
-  const MonthYear(
-      {super.key, required this.currentMonth, required this.onClickPicker});
+  const MonthYear({
+    super.key,
+    required this.currentMonth,
+    required this.onClickPicker,
+    required this.isCurrentMonth,
+    required this.onToday,
+  });
 
   final DateTime currentMonth;
   final Function(BuildContext context) onClickPicker;
+  final bool isCurrentMonth;
+  final VoidCallback onToday;
+
+  static const _accent = Color.fromARGB(255, 66, 211, 146);
 
   @override
   Widget build(BuildContext context) {
@@ -21,28 +30,54 @@ class MonthYear extends StatelessWidget {
               color: Color.fromARGB(255, 230, 230, 230),
             ),
           ),
-          const SizedBox(
-            width: 15,
-          ),
+          const SizedBox(width: 15),
           Text(
             currentMonth.year.toString(),
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 66, 211, 146),
+              color: _accent,
             ),
           ),
           const Spacer(),
+          // Чип «сегодня»: на текущем месяце приглушён и неактивен,
+          // на других месяцах яркий, по нажатию возвращает к сегодня.
+          IgnorePointer(
+            ignoring: isCurrentMonth,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: isCurrentMonth ? 0.35 : 1,
+              child: GestureDetector(
+                onTap: onToday,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: _accent, width: 2),
+                  ),
+                  child: Text(
+                    DateTime.now().day.toString(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color.fromARGB(255, 230, 230, 230),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
           IconButton(
-            onPressed: () {
-              onClickPicker(context);
-            },
+            onPressed: () => onClickPicker(context),
             icon: const Icon(
               Icons.calendar_month,
-              color: Color.fromARGB(255, 66, 211, 146),
+              color: _accent,
               size: 28,
             ),
-          )
+          ),
         ],
       ),
     );

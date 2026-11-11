@@ -5,7 +5,6 @@ import 'package:calendar/widgets/button_bloc.dart';
 import 'package:calendar/widgets/days_of_week.dart';
 import 'package:calendar/widgets/month.dart';
 import 'package:calendar/widgets/month_year.dart';
-import 'package:intl/intl.dart';
 
 import '../crew_manager.dart';
 import '../events_manager.dart';
@@ -134,6 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
               MonthYear(
                 currentMonth: currentMonth,
                 onClickPicker: _selectDate,
+                isCurrentMonth: isCurrentMonth,
+                onToday: _goToToday,
               ),
               const Divider(
                 indent: 12,
@@ -143,10 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               const DaysOfWeek(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: SizedBox(
-                  height: 380,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: _pageCount,
@@ -156,59 +156,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       });
                     },
                     itemBuilder: (context, page) {
-                      return Month(
-                        currentMonth: _monthForPage(page),
-                        crew: _crew,
-                        events: _events,
-                        onToggleEvent: _toggleEvent,
+                      return Align(
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          height: 380,
+                          child: Month(
+                            currentMonth: _monthForPage(page),
+                            crew: _crew,
+                            events: _events,
+                            onToggleEvent: _toggleEvent,
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 700),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    child: isCurrentMonth
-                        ? const SizedBox.shrink()
-                        : GestureDetector(
-                            key: const ValueKey('date_button'),
-                            onTap: _goToToday,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color:
-                                      const Color.fromARGB(255, 68, 206, 153),
-                                  width: 3,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 10),
-                                child: Text(
-                                  DateFormat('dd.MM.yyyy')
-                                      .format(DateTime.now()),
-                                  style: const TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color.fromARGB(255, 230, 230, 230),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              const Spacer(),
               ButtonBloc(crew: _crew, onChangeCrew: _changeCrew),
               const SizedBox(height: 46),
             ],
